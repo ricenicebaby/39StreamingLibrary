@@ -1,0 +1,177 @@
+﻿@page "/library"
+
+@using DataAccessLibrary
+@using DataAccessLibrary.Models
+@using _39StreamingLibrary.Models
+
+@inject IGameData _db
+@inject IGenreData _db2
+@inject IGameGenreData _db3
+
+<!-- Add game -->
+<div class="container-fluid" style="background-color:lemonchiffon">
+        <h3 style="font-family:LemonJuice">Add new game</h3>
+        <p>
+            Instructions:
+            <ol>
+                <li>Add the game by providing the game name (first box) and the address to the game's cover art (second box).</li>
+                <li>Click on the newly added game and click the "Edit" button.</li>
+                <li>Add genres and/or edit other game information to your discretion.</li>
+            </ol>
+        </p>
+        <EditForm Model="@newGame" OnValidSubmit="@InsertGame">
+            <!-- Validate data annotations in the DisplayGameModel model-->
+            <DataAnnotationsValidator />
+            <!-- Displays error messages to user if invalid submit-->
+            <ValidationSummary />
+
+            <InputText id="gameName" @bind-Value="newGame.GameName" />
+            <InputText id="gameCoverUrl" @bind-Value="newGame.GameCoverUrl" />
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </EditForm>
+</div>
+
+<!-- Genre buttons/tags -->
+<div class="container-fluid">
+    <h3 style="font-family:LemonJuice">Filter:</h3>
+    @if (genres is null)
+    {
+        <p><em>Loading... </em></p>
+    }
+    else
+    {
+        @foreach (var genre in genres)
+        {
+            <button>@genre.GenreName</button>
+        }
+        <button style="background-color:Highlight;font-weight:bold">Add genre +</button>
+    }
+</div>
+
+<!-- Games -->
+<div class="container py-4">
+    @if (games is null)
+    {
+        <p><em>Loading... </em></p>
+    }
+    else
+    {
+        <div class="row row-cols-lg-4 row-cols-md-3 row-cols-3">
+            @foreach (var game in games)
+            {
+                <img src="@game.GameCoverUrl" id="@game.GameId" style="width:190px;height:250px" type="button" @onclick="() => EditGame(game)" />
+            }
+        </div>
+    }
+</div>
+
+<!-- Modal -->
+@if (ShowPopup)
+{
+    <!-- This is the popup to create or edit a forecast -->
+<div class="modal" tabindex="-1" style="display:block" role="dialog" @onclick="@ClosePopup">
+    <div class="modal-dialog">
+
+        <!-- Modal content -->
+        <div class="modal-content" onclick="event.stopPropagation();">
+            <!-- Header -->
+            <div class="modal-header">
+                <h3 class="modal-title" style="font-family:LemonJuice">@sampleGame.GameName</h3>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <label>Game: @sampleGame.GameName</label> <br />
+                <label>Game ID: @sampleGame.GameId.ToString()</label><br />
+
+                <label>
+                    Genre(s): @foreach (var genre in specificGenres)
+                    {
+                        <button>@genre.GenreName</button>
+                    }
+
+                </label><br />
+
+            </div>
+            <div class="modal-footer">
+                <button style="background-color:cornflowerblue">Edit</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+}
+
+@code {
+
+    // Initializations
+    private List<GameModel> games;
+    private DisplayGameModel newGame = new DisplayGameModel();
+    GameModel sampleGame = new GameModel();
+    private List<GenreModel> genres;
+    List<GenreModel> specificGenres = new List<GenreModel>();
+    private List<GameGenreModel> gamegenres;
+
+    // Populate models
+    protected override async Task OnInitializedAsync()
+    {
+        games = await _db.GetGames();
+        genres = await _db2.GetGenres();
+        gamegenres = await _db3.GetGameGenres();
+    }
+
+    // Create and close modal for currently selected game
+    public bool ShowPopup { get; set; } = false;
+
+    void ClosePopup()
+    {
+        // Close the modal
+        ShowPopup = false;
+
+        // Have to clear the list, otherwise genres just keep adding up with each opened modal
+        specificGenres.Clear();
+    }
+
+    void EditGame(GameModel currGame)
+    {
+        // Set the selected game as the current game
+        sampleGame = currGame;
+        grabSpecficGenres(currGame);
+
+        // Open the Popup
+        ShowPopup = true;
+    }
+
+    // Grab and populate the associated genres with the selected game
+    void grabSpecficGenres(GameModel currGame)
+    {
+        foreach (var gamegenre in gamegenres)
+        {
+            if (currGame.GameId == gamegenre.GameId)
+            {
+                foreach (var genre in genres)
+                {
+                    if (gamegenre.GenreId == genre.GenreId)
+                    {
+                        specificGenres.Add(genre);
+                    }
+                }
+            }
+        }
+    }
+
+    private async Task InsertGame()
+    {
+        GameModel g = new GameModel
+        {
+            GameName = newGame.GameName,
+            GameCoverUrl = newGame.GameCoverUrl
+        };
+
+        await _db.InsertGame(g);
+
+        games.Add(g);
+        newGame = new DisplayGameModel();
+    }
+}

@@ -1,0 +1,35 @@
+﻿<nav class="navbar navbar-expand-lg">
+    <div class="d-flex justify-content-start">
+        <a class="navbar-brand p-0 my-auto" href="">
+            <img src="/images/caticon.jpg" class="align-self-center" style="width:48px;height:48px"/>
+        </a>
+    </div>
+
+    <div class="@NavMenuCssClass collapse navbar-collapse" @onclick="ToggleNavMenu">
+        <ul class="navbar-nav nav-pills" style="font-family:FreshLychee">
+            <li class="nav-item px-4">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    Home
+                </NavLink>
+            </li>
+            <li class="nav-item px-4">
+                <NavLink class="nav-link" href="library">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-bookshelf" viewBox="0 0 16 16">
+                        <path d="M2.5 0a.5.5 0 0 1 .5.5V2h10V.5a.5.5 0 0 1 1 0v15a.5.5 0 0 1-1 0V15H3v.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 .5-.5zM3 14h10v-3H3v3zm0-4h10V7H3v3zm0-4h10V3H3v3z" />
+                    </svg> Library
+                </NavLink>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

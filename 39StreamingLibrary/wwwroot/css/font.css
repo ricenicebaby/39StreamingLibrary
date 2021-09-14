@@ -1,0 +1,22 @@
+﻿@font-face {
+    font-family: AvocadoCreamy;
+    src: url('/fonts/Avocado Creamy.otf');
+}
+
+@font-face {
+    font-family: FreshLychee;
+    src: url('/fonts/Fresh Lychee.otf');
+}
+
+@font-face {
+    font-family: LemonJuice;
+    src: url('/fonts/Lemon Juice.otf');
+}
+
+h1 {
+    font-size: 6em;
+}
+
+h3 {
+    font-size: 3.5em;
+}
