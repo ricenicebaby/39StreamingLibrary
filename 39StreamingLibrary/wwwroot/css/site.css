@@ -34,6 +34,56 @@ body {
     overflow-x: hidden;
 }
 
+/* For image overlay */
+
+.image {
+    position: relative;
+    width: 190px;
+}
+
+.image__img {
+    display: block;
+    width: 100%;
+}
+
+.image__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30%;
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+
+/* This means to target EVERY DIRECT CHILD of the parent (.image__overlay) */
+.image__overlay > * {
+    transform: translateY(15px);
+    transition: transform 0.25s;
+}
+
+.image__overlay:hover {
+    opacity: 1;
+}
+
+.image__overlay:hover > * {
+    transform: translateY(0);
+}
+
+.padding-0 {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.rounded {
+    border-radius: 55px;
+}
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
