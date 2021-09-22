@@ -19,18 +19,14 @@ namespace DataAccessLibrary
             this.db = db;
         }
 
-        public Task<List<GameModel>> GetGames()
+        public Task<List<GameModel>> LoadData<T, U>(string sql, U parameters)
         {
-            string sql = "select GameId, GameName, GameCoverUrl, GameIdString from dbo.Game";
             return this.db.LoadData<GameModel, dynamic>(sql, new { });
         }
 
-        public Task InsertGame(GameModel game)
+        public Task SaveData<T>(string sql, T parameters)
         {
-            string sql = @"insert into dbo.Game (GameName, GameCoverUrl)" +
-                            "values (@GameName, @GameCoverUrl);";
-
-            return this.db.SaveData(sql, game);
+            return this.db.SaveData(sql, parameters);
         }
 
     }

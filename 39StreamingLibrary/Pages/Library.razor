@@ -10,26 +10,26 @@
 
 <!-- Add game -->
 <div class="container-fluid" style="background-color:lemonchiffon">
-        <h3 style="font-family:LemonJuice">Add new game</h3>
-        <p>
-            Instructions:
-            <ol>
-                <li>Add the game by providing the game name (first box) and the address to the game's cover art (second box).</li>
-                <li>Click on the newly added game and click the "Edit" button.</li>
-                <li>Add genres and/or edit other game information to your discretion.</li>
-            </ol>
-        </p>
-        <EditForm Model="@newGame" OnValidSubmit="@InsertGame">
-            <!-- Validate data annotations in the DisplayGameModel model-->
-            <DataAnnotationsValidator />
-            <!-- Displays error messages to user if invalid submit-->
-            <ValidationSummary />
+    <h3 style="font-family:LemonJuice">Add new game</h3>
+    <p>
+        Instructions:
+        <ol>
+            <li>Add the game by providing the game name (first box) and the address to the game's cover art (second box).</li>
+            <li>Click on the newly added game and click the "Edit" button.</li>
+        </ol>
+    </p>
+    <EditForm Model="@newGame" OnValidSubmit="@InsertGame">
+        <!-- Validate data annotations in the DisplayGameModel model-->
+        <DataAnnotationsValidator />
+        <!-- Displays error messages to user if invalid submit-->
+        <ValidationSummary />
 
-            <InputText id="gameName" @bind-Value="newGame.GameName" />
-            <InputText id="gameCoverUrl" @bind-Value="newGame.GameCoverUrl" />
+        <InputText id="gameName" @bind-Value="newGame.GameName" />
+        <InputText id="gameCoverUrl" @bind-Value="newGame.GameCoverUrl" />
 
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </EditForm>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </EditForm>
+
 </div>
 
 <!-- Genre buttons/tags -->
@@ -41,12 +41,34 @@
     }
     else
     {
-        @foreach (var genre in genres)
-        {
-            <button>@genre.GenreName</button>
-        }
-        <button style="background-color:Highlight;font-weight:bold">Add genre +</button>
+        <div class="btn-group">
+            @foreach (var genre in genres)
+            {
+                <label class="btn btn-primary">
+                    <input type="checkbox" @onchange="eventArgs => { grabSpecficGames(genre, eventArgs.Value); }" /> @genre.GenreName
+                </label>
+
+            }
+        </div>
+        @*<button style="background-color:Highlight;font-weight:bold">Add genre +</button>*@
     }
+</div>
+
+<!-- For testing purposes -->
+<div class="container" style="background-color:darkorange">
+    @if (testggmodel is null)
+            {
+                <p><em>Loading</em></p>
+            }
+    else
+            {
+                @foreach (var gg in testggmodel)
+                {
+                    <p>@gg.GameGenreId</p>
+                    <p>@gg.GameId</p>
+                    <p>@gg.GenreId</p>
+                }
+            }
 </div>
 
 <!-- Games -->
@@ -60,7 +82,14 @@
         <div class="row row-cols-lg-4 row-cols-md-3 row-cols-3">
             @foreach (var game in games)
             {
-                <img src="@game.GameCoverUrl" id="@game.GameId" style="width:190px;height:250px" type="button" @onclick="() => EditGame(game)" />
+                <div class="image">
+                    <img class="image__img" src="@game.GameCoverUrl" id="@game.GameId" style="width:190px;height:250px" type="button" />
+                    <div class="image__overlay" style="width:190px;height:250px">
+                            <button class="btn btn-primary" @onclick="() => OpenGame(game)">View</button>
+                            <button class="btn btn-warning" @onclick="() => OpenEditGame(game)">Edit</button>
+                            <button class="btn btn-danger" @onclick="() => OpenDeletePopup(game)">Delete</button>
+                    </div>
+                </div>
             }
         </div>
     }
@@ -69,61 +98,130 @@
 <!-- Modal -->
 @if (ShowPopup)
 {
-    <!-- This is the popup to create or edit a forecast -->
-<div class="modal" tabindex="-1" style="display:block" role="dialog" @onclick="@ClosePopup">
-    <div class="modal-dialog">
+    <!-- This is the popup to create a game's display -->
+    <div class="modal" tabindex="-1" style="display:block" role="dialog" @onclick="@ClosePopup">
+        <div class="modal-dialog">
 
-        <!-- Modal content -->
-        <div class="modal-content" onclick="event.stopPropagation();">
-            <!-- Header -->
-            <div class="modal-header">
-                <h3 class="modal-title" style="font-family:LemonJuice">@sampleGame.GameName</h3>
+            <!-- Modal content -->
+            <div class="modal-content" onclick="event.stopPropagation();">
+                <!-- Header -->
+                <div class="modal-header">
+                    <h3 class="modal-title" style="font-family:LemonJuice">@selectedGame.GameName</h3>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <label>Game: @selectedGame.GameName</label> <br />
+
+                    <label>
+                        Genre(s): @foreach (var genre in specificGenres)
+                        {
+                            <button>@genre.GenreName</button>
+                        }
+
+                    </label><br />
+                    <div class="modal-footer">
+                    </div>
+                </div>
             </div>
 
-            <!-- Body -->
-            <div class="modal-body">
-                <label>Game: @sampleGame.GameName</label> <br />
-                <label>Game ID: @sampleGame.GameId.ToString()</label><br />
+        </div>
+    </div>
+}
 
-                <label>
-                    Genre(s): @foreach (var genre in specificGenres)
-                    {
-                        <button>@genre.GenreName</button>
-                    }
+@if (ShowEditPopup)
+{
+    <!-- This is the popup to edit a game's information -->
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content -->
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <h3 class="modal-title" style="font-family:LemonJuice">@selectedGame.GameName</h3>
+                    <button class="btn btn-warning" @onclick="@UpdateGame">&times;</button>
+                </div>
 
-                </label><br />
+                <!-- Body -->
+                <div class="modal-body">
+                    <label>Game: </label>
+                    <input type="text" id="gameName" name="gameName" @bind-value="selectedGame.GameName" /><br />
+                    <label>Game Cover (URL): </label>
+                    <input type="text" id="gameCover" name="gameCover" @bind-value="selectedGame.GameCoverUrl" /><br />
 
+                    <label>
+                        Genre(s): @foreach (var genre in specificGenres)
+                        {
+                            <button>@genre.GenreName</button>
+                        }
+                        <button>Add genre +</button>
+
+                    </label><br />
+                    <div class="modal-footer">
+                        <button class="btn btn-warning" @onclick="@UpdateGame">Save</button>
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button style="background-color:cornflowerblue">Edit</button>
+
+        </div>
+    </div>
+}
+
+@if (ShowDeletePopup)
+{
+    <div class="modal" style="display:block" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body container-fluid d-flex flex-column flex-grow-1">
+                    <div class="row">
+                        <header class="col-12">
+                            <h4>Are you sure you want to delete <b>@selectedGame.GameName</b>?</h4>
+                        </header>
+                        <aside class="col-4">
+                            <img class="rounded float-left" style="width:190px;height:250px" src="@selectedGame.GameCoverUrl" />
+                        </aside>
+                        <div class="col-8" style="padding-left:60px">
+                            <button class="btn btn-danger" @onclick="() => DeleteGame(selectedGame)">Yes, delete forever :)</button><br />
+                            <button class="btn btn-warning" @onclick="CloseDeletePopup">Never mind</button>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
-
     </div>
-</div>
 }
 
 @code {
-    public string hi = "hi o3o";
-
     // Initializations
     private List<GameModel> games;
     private DisplayGameModel newGame = new DisplayGameModel();
-    GameModel sampleGame = new GameModel();
+    GameModel selectedGame = new GameModel();
+    List<GameModel> specificGames = new List<GameModel>();
+
     private List<GenreModel> genres;
+    private DisplayGenreModel newGenre = new DisplayGenreModel();
+
     List<GenreModel> specificGenres = new List<GenreModel>();
+
     private List<GameGenreModel> gamegenres;
+    private DisplayGameGenreModel newGameGenre = new DisplayGameGenreModel();
+    public List<GameGenreModel> testggmodel = new List<GameGenreModel>(); // for testing purposes
 
     // Populate models
     protected override async Task OnInitializedAsync()
     {
-        games = await _db.GetGames();
+        string sql = "select GameId, GameName, GameCoverUrl from dbo.Game";
+        games = await _db.LoadData<GameModel, dynamic>(sql, new { });
+
         genres = await _db2.GetGenres();
         gamegenres = await _db3.GetGameGenres();
     }
 
-    // Create and close modal for currently selected game
+    // Booleans for opening or closing modals
     public bool ShowPopup { get; set; } = false;
+    public bool ShowEditPopup { get; set; } = false;
+    public bool ShowDeletePopup { get; set; } = false;
 
     void ClosePopup()
     {
@@ -134,17 +232,17 @@
         specificGenres.Clear();
     }
 
-    void EditGame(GameModel currGame)
+    void OpenGame(GameModel currGame)
     {
         // Set the selected game as the current game
-        sampleGame = currGame;
+        selectedGame = currGame;
         grabSpecficGenres(currGame);
 
         // Open the Popup
         ShowPopup = true;
     }
 
-    // Grab and populate the associated genres with the selected game
+    // Grab and populate the associated GENRES with the selected GAME
     void grabSpecficGenres(GameModel currGame)
     {
         foreach (var gamegenre in gamegenres)
@@ -162,6 +260,40 @@
         }
     }
 
+    // Grab and populate the associated GAMES with the selected GENRES
+    public async Task grabSpecficGames(GenreModel currGenre, object checkedValue)
+    {
+        var set1 = gamegenres.Where(gamegenre => gamegenre.GenreId == currGenre.GenreId);
+        var set2 = games.Select(x => x.GameId).Intersect(set1.Select(x => x.GameId));
+
+        var set3 = games.Where(x => set2.Contains(x.GameId));
+
+        // If checked
+        if ((bool)checkedValue)
+        {
+            specificGames = set3.ToList();
+            games = specificGames;
+        }
+
+        // If unchecked
+        else
+        {
+            foreach (GameModel set3game in set3.ToList())
+            {
+                specificGames.Remove(set3game);
+            }
+
+            await OnInitializedAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+
+    /// /////////////////////////////
+    /// /////////////////////////////
+    // CRUD ACTIONS
+    //
+
     private async Task InsertGame()
     {
         GameModel g = new GameModel
@@ -170,9 +302,84 @@
             GameCoverUrl = newGame.GameCoverUrl
         };
 
-        await _db.InsertGame(g);
+        string sql = @"insert into dbo.Game (GameName, GameCoverUrl)" +
+                "values (@GameName, @GameCoverUrl);";
+        await _db.SaveData<GameModel>(sql, g);
 
         games.Add(g);
         newGame = new DisplayGameModel();
     }
+
+    void OpenEditGame(GameModel currGame)
+    {
+        selectedGame = currGame;
+        grabSpecficGenres(currGame);
+        ShowEditPopup = true;
+    }
+
+    private async Task UpdateGame()
+    {
+        ShowEditPopup = false;
+
+        GameModel g = new GameModel()
+        {
+            GameName = selectedGame.GameName,
+            GameCoverUrl = selectedGame.GameCoverUrl,
+            GameId = selectedGame.GameId
+        };
+
+        specificGenres.Clear();
+        string sql = "update dbo.Game set GameName = @GameName where GameId = @GameId" +
+                " update dbo.Game set GameCoverUrl = @GameCoverUrl where GameId = @GameId";
+
+        await _db.SaveData(sql, g);
+
+        await OnInitializedAsync();
+    }
+
+    //
+    void OpenDeletePopup(GameModel currGame)
+    {
+        // Open the popup prompting a delete
+        ShowDeletePopup = true;
+        selectedGame = currGame;
+    }
+    void CloseDeletePopup()
+    {
+        ShowDeletePopup = false;
+    }
+
+    private async Task DeleteGame(GameModel game)
+    {
+        ShowDeletePopup = false;
+
+        GameModel g = new GameModel()
+        {
+            GameName = game.GameName,
+            GameCoverUrl = game.GameCoverUrl,
+            GameId = game.GameId
+        };
+
+        string sql = "delete from game where GameId = @GameId";
+
+        await _db.SaveData(sql, g);
+
+        await OnInitializedAsync();
+    }
+
+    private async Task InsertGameGenre(GameModel game, GenreModel genre)
+    {
+        GameGenreModel gg = new GameGenreModel
+        {
+            GameId = game.GameId,
+            GenreId = genre.GenreId
+        };
+
+        string sql = @"insert into dbo.GameGenre (GameId, GenreId)" +
+                "values (@GameId, @GenreId);";
+        await _db.SaveData<GameGenreModel>(sql, gg);
+
+        newGameGenre = new DisplayGameGenreModel();
+    }
+
 }

@@ -6,7 +6,7 @@ namespace DataAccessLibrary
 {
     public interface IGameData
     {
-        Task<List<GameModel>> GetGames();
-        Task InsertGame(GameModel game);
+        Task<List<GameModel>> LoadData<T, U>(string sql, U parameters);
+        Task SaveData<T>(string sql, T parameters);
     }
 }

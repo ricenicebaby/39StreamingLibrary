@@ -18,7 +18,7 @@ namespace DataAccessLibrary
 
         public Task<List<GameGenreModel>> GetGameGenres()
         {
-            string sql = "select GameId, GenreId, GameIdString, GenreIdString from dbo.GameGenre";
+            string sql = "select GameId, GenreId from dbo.GameGenre";
             return this.db.LoadData<GameGenreModel, dynamic>(sql, new { });
         }
     }
