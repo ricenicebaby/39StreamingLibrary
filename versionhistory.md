@@ -30,6 +30,12 @@ In the database:
 - Dropped an unnecessary ID string column from every table; this string was a string version of the uniqueidentifier ID that was used initially
 - Added an additional table connected to Game, which will hold video URL's for the respective game
 
+**Version 3: 09/30/2021**
+
+This update:
+- Provides further CRUD capabilities by allowing the user to add a genre to a game
+- Allows the user to move the modal
+
 **Future actions**
 - Implement authorization so only authenticated and authorized users can CREATE, UPDATE, and DELETE. (!important) (1st priority)
-- Allow the user to: edit genres, add & remove genres to a game, provide YouTube links for a provided game
+- Allow the user to: edit genres, remove genres to a game, provide YouTube links for a provided game
