@@ -6,6 +6,8 @@ namespace DataAccessLibrary
 {
     public interface IGameGenreData
     {
-        Task<List<GameGenreModel>> GetGameGenres();
+        Task<List<GameGenreModel>> LoadData<T, U>(string sql, U parameters);
+        Task SaveData<T>(string sql, T parameters);
+
     }
 }

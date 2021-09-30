@@ -45,7 +45,7 @@
             @foreach (var genre in genres)
             {
                 <label class="btn btn-primary">
-                    <input type="checkbox" @onchange="eventArgs => { grabSpecficGames(genre, eventArgs.Value); }" /> @genre.GenreName
+                    <input type="checkbox" @onchange="eventArgs => { grabSpecificGames(genre, eventArgs.Value); }" /> @genre.GenreName
                 </label>
 
             }
@@ -99,7 +99,8 @@
 @if (ShowPopup)
 {
     <!-- This is the popup to create a game's display -->
-    <div class="modal" tabindex="-1" style="display:block" role="dialog" @onclick="@ClosePopup">
+    <div class="modal" tabindex="-1" style="display:block;top:@(offsetY)px;left:@(offsetX)px;" role="dialog" @onclick="@ClosePopup"
+         draggable="true" @ondragend="@OnDragEnd" @ondragstart="@OnDragStart">
         <div class="modal-dialog">
 
             <!-- Modal content -->
@@ -112,7 +113,7 @@
                 <!-- Body -->
                 <div class="modal-body">
                     <label>Game: @selectedGame.GameName</label> <br />
-
+                    <label>Description: </label><br />
                     <label>
                         Genre(s): @foreach (var genre in specificGenres)
                         {
@@ -129,10 +130,12 @@
     </div>
 }
 
+<!-- Edit modal -->
 @if (ShowEditPopup)
 {
     <!-- This is the popup to edit a game's information -->
-    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+    <div class="modal" tabindex="-1" style="display:block;top:@(offsetY)px;left:@(offsetX)px;" role="dialog"
+         draggable="true" @ondragend="@OnDragEnd" @ondragstart="@OnDragStart">
         <div class="modal-dialog">
             <!-- Modal content -->
             <div class="modal-content">
@@ -146,6 +149,7 @@
                 <div class="modal-body">
                     <label>Game: </label>
                     <input type="text" id="gameName" name="gameName" @bind-value="selectedGame.GameName" /><br />
+                    <label>Description: </label><br />
                     <label>Game Cover (URL): </label>
                     <input type="text" id="gameCover" name="gameCover" @bind-value="selectedGame.GameCoverUrl" /><br />
 
@@ -154,7 +158,8 @@
                         {
                             <button>@genre.GenreName</button>
                         }
-                        <button>Add genre +</button>
+                        <input type="text" id="genreName" name="genreName" @bind-value="selectedGenre.GenreName" />
+                        <button @onclick="@UpdateGenre">Add genre +</button>
 
                     </label><br />
                     <div class="modal-footer">
@@ -193,193 +198,37 @@
 }
 
 @code {
-    // Initializations
-    private List<GameModel> games;
-    private DisplayGameModel newGame = new DisplayGameModel();
-    GameModel selectedGame = new GameModel();
-    List<GameModel> specificGames = new List<GameModel>();
-
-    private List<GenreModel> genres;
-    private DisplayGenreModel newGenre = new DisplayGenreModel();
-
-    List<GenreModel> specificGenres = new List<GenreModel>();
-
-    private List<GameGenreModel> gamegenres;
-    private DisplayGameGenreModel newGameGenre = new DisplayGameGenreModel();
-    public List<GameGenreModel> testggmodel = new List<GameGenreModel>(); // for testing purposes
-
-    // Populate models
-    protected override async Task OnInitializedAsync()
-    {
-        string sql = "select GameId, GameName, GameCoverUrl from dbo.Game";
-        games = await _db.LoadData<GameModel, dynamic>(sql, new { });
-
-        genres = await _db2.GetGenres();
-        gamegenres = await _db3.GetGameGenres();
-    }
-
     // Booleans for opening or closing modals
     public bool ShowPopup { get; set; } = false;
     public bool ShowEditPopup { get; set; } = false;
     public bool ShowDeletePopup { get; set; } = false;
 
-    void ClosePopup()
-    {
-        // Close the modal
-        ShowPopup = false;
+    // Initializations
+    private List<GameModel> games; // Holds currently populated list of games
+    private DisplayGameModel newGame = new DisplayGameModel(); // For new games
+    GameModel selectedGame = new GameModel();
+    List<GameModel> specificGames = new List<GameModel>();
 
-        // Have to clear the list, otherwise genres just keep adding up with each opened modal
-        specificGenres.Clear();
+    private List<GenreModel> genres; // Holds currently populated list of genres
+    private DisplayGenreModel newGenre = new DisplayGenreModel(); // For new genres
+    GenreModel selectedGenre = new GenreModel();
+    List<GenreModel> specificGenres = new List<GenreModel>();
+
+    private List<GameGenreModel> gamegenres;
+    private DisplayGameGenreModel newGameGenre = new DisplayGameGenreModel(); // 
+    public List<GameGenreModel> testggmodel = new List<GameGenreModel>(); // For testing purposes
+
+    // For moving the modal
+    private double startX, startY, offsetX, offsetY;
+    private void OnDragStart(DragEventArgs args)
+    {
+        startX = args.ClientX;
+        startY = args.ClientY;
     }
-
-    void OpenGame(GameModel currGame)
+    private void OnDragEnd(DragEventArgs args)
     {
-        // Set the selected game as the current game
-        selectedGame = currGame;
-        grabSpecficGenres(currGame);
-
-        // Open the Popup
-        ShowPopup = true;
-    }
-
-    // Grab and populate the associated GENRES with the selected GAME
-    void grabSpecficGenres(GameModel currGame)
-    {
-        foreach (var gamegenre in gamegenres)
-        {
-            if (currGame.GameId == gamegenre.GameId)
-            {
-                foreach (var genre in genres)
-                {
-                    if (gamegenre.GenreId == genre.GenreId)
-                    {
-                        specificGenres.Add(genre);
-                    }
-                }
-            }
-        }
-    }
-
-    // Grab and populate the associated GAMES with the selected GENRES
-    public async Task grabSpecficGames(GenreModel currGenre, object checkedValue)
-    {
-        var set1 = gamegenres.Where(gamegenre => gamegenre.GenreId == currGenre.GenreId);
-        var set2 = games.Select(x => x.GameId).Intersect(set1.Select(x => x.GameId));
-
-        var set3 = games.Where(x => set2.Contains(x.GameId));
-
-        // If checked
-        if ((bool)checkedValue)
-        {
-            specificGames = set3.ToList();
-            games = specificGames;
-        }
-
-        // If unchecked
-        else
-        {
-            foreach (GameModel set3game in set3.ToList())
-            {
-                specificGames.Remove(set3game);
-            }
-
-            await OnInitializedAsync();
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-
-    /// /////////////////////////////
-    /// /////////////////////////////
-    // CRUD ACTIONS
-    //
-
-    private async Task InsertGame()
-    {
-        GameModel g = new GameModel
-        {
-            GameName = newGame.GameName,
-            GameCoverUrl = newGame.GameCoverUrl
-        };
-
-        string sql = @"insert into dbo.Game (GameName, GameCoverUrl)" +
-                "values (@GameName, @GameCoverUrl);";
-        await _db.SaveData<GameModel>(sql, g);
-
-        games.Add(g);
-        newGame = new DisplayGameModel();
-    }
-
-    void OpenEditGame(GameModel currGame)
-    {
-        selectedGame = currGame;
-        grabSpecficGenres(currGame);
-        ShowEditPopup = true;
-    }
-
-    private async Task UpdateGame()
-    {
-        ShowEditPopup = false;
-
-        GameModel g = new GameModel()
-        {
-            GameName = selectedGame.GameName,
-            GameCoverUrl = selectedGame.GameCoverUrl,
-            GameId = selectedGame.GameId
-        };
-
-        specificGenres.Clear();
-        string sql = "update dbo.Game set GameName = @GameName where GameId = @GameId" +
-                " update dbo.Game set GameCoverUrl = @GameCoverUrl where GameId = @GameId";
-
-        await _db.SaveData(sql, g);
-
-        await OnInitializedAsync();
-    }
-
-    //
-    void OpenDeletePopup(GameModel currGame)
-    {
-        // Open the popup prompting a delete
-        ShowDeletePopup = true;
-        selectedGame = currGame;
-    }
-    void CloseDeletePopup()
-    {
-        ShowDeletePopup = false;
-    }
-
-    private async Task DeleteGame(GameModel game)
-    {
-        ShowDeletePopup = false;
-
-        GameModel g = new GameModel()
-        {
-            GameName = game.GameName,
-            GameCoverUrl = game.GameCoverUrl,
-            GameId = game.GameId
-        };
-
-        string sql = "delete from game where GameId = @GameId";
-
-        await _db.SaveData(sql, g);
-
-        await OnInitializedAsync();
-    }
-
-    private async Task InsertGameGenre(GameModel game, GenreModel genre)
-    {
-        GameGenreModel gg = new GameGenreModel
-        {
-            GameId = game.GameId,
-            GenreId = genre.GenreId
-        };
-
-        string sql = @"insert into dbo.GameGenre (GameId, GenreId)" +
-                "values (@GameId, @GenreId);";
-        await _db.SaveData<GameGenreModel>(sql, gg);
-
-        newGameGenre = new DisplayGameGenreModel();
+        offsetX += args.ClientX - startX;
+        offsetY += args.ClientY - startY;
     }
 
 }
