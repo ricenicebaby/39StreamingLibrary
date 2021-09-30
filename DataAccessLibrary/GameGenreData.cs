@@ -16,10 +16,14 @@ namespace DataAccessLibrary
             this.db = db;
         }
 
-        public Task<List<GameGenreModel>> GetGameGenres()
+        public Task<List<GameGenreModel>> LoadData<T, U>(string sql, U parameters)
         {
-            string sql = "select GameId, GenreId from dbo.GameGenre";
             return this.db.LoadData<GameGenreModel, dynamic>(sql, new { });
+        }
+
+        public Task SaveData<T>(string sql, T parameters)
+        {
+            return this.db.SaveData(sql, parameters);
         }
     }
 }

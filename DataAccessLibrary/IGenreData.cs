@@ -6,7 +6,7 @@ namespace DataAccessLibrary
 {
     public interface IGenreData
     {
-        Task<List<GenreModel>> GetGenres();
+        Task<List<GenreModel>> LoadData<T, U>(string sql, U parameters);
         Task InsertGenre(GenreModel genre);
     }
 }
