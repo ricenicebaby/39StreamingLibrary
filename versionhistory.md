@@ -36,6 +36,17 @@ This update:
 - Provides further CRUD capabilities by allowing the user to add a genre to a game
 - Allows the user to move the modal
 
+Version 4: 10/07/2021
+
+This update:
+- Provided default values for adding a game and genre, making the site a bit cleaner and instructions straightfoward.
+- Implements further CRUD capabilities by allowing the user to add a genre (in general, not just to a game).
+- Implements further CRUD capabilities by allowing the user to add YouTube videos to a specific game.
+- Changed the interface design of filtering genres/tags. Previously genres were confined in 
+  uniformly-sized boxes, even if the genres had more characters; this resulted in a crammed look.
+- In the SQL database, there is now another table that connects to the primary Game table: the GameVideo table.   
+- The GameVideo table consists of a GameId and a VideoUrl. 
+
 **Future actions**
 - Implement authorization so only authenticated and authorized users can CREATE, UPDATE, and DELETE. (!important) (1st priority)
 - Allow the user to: edit genres, remove genres to a game, provide YouTube links for a provided game
