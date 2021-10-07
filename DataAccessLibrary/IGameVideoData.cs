@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace DataAccessLibrary
 {
-    public interface IGenreData
+    public interface IGameVideoData
     {
-        Task<List<GenreModel>> LoadData<T, U>(string sql, U parameters);
+        Task<List<GameVideoModel>> LoadData<T, U>(string sql, U parameters);
         Task SaveData<T>(string sql, T parameters);
     }
 }

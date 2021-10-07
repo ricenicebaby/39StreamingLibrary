@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace DataAccessLibrary.Models
 {
-    public class GameModel
+    public class GameVideoModel
     {
         [Key]
         public Guid GameId { get; set; }
-        public string GameName { get; set; }
-        public string GameDescription { get; set; }
-        public string GameCoverUrl { get; set; }
+        public string VideoUrl { get; set; }
+
     }
 }

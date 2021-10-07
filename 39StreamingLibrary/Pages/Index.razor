@@ -1,12 +1,13 @@
 ﻿@page "/"
 
-<h1 class="text-center">Hello, world!</h1>
+<h1 class="text-center" style="font-family: FreshLychee;color:#4B0082">Welcome to the 39 Streaming Library!</h1>
 
 <div class="container" style="background-color:lemonchiffon">
     <p>
-        Welcome to your new app. This is a Blazor-made website made for fun to archive 39Daph's streaming content! <br />
+        Welcome to your new app. This is a Blazor-made website (hooking data from a SQL database) made for fun to archive 39Daph's streaming content! <br />
         This is largely serving as an introductory personal project for my hopeful software developing career. <br />
-        To differentiate itself from the VOD channel on Youtube, this website:
+        <b>(Note: this web app runs no ads and is hosted on Azure. I am paying for it and there is no profit being made!)</b> <br />
+        To differentiate itself from the VOD channel on YouTube, this website:
         <ul>
             <li>
                 Consolidates the games Daph has played in an easier-to-browse visual-style with actual game cover art, like a library
@@ -38,7 +39,7 @@
             <button @onclick="OpenPopup">Click for version history</button>
         </center>
 
-        <center><b>I am actively working on this website! Though, because I'm eager to apply for jobs, I'm putting this up (on Github) now.</b></center>
+        <center><b>I am actively working on this website! Though, because I'm eager to apply for jobs, I'm putting this up (on GitHub) now.</b></center>
 
     </p>
 </div>
@@ -95,6 +96,21 @@
                         <ul>
                             <li>Provides further CRUD capabilities by allowing the user to add a genre to a game.</li>
                             <li>Allows the user to move the modal.</li>
+                        </ul>
+                    </p>
+
+                    <label style="font-weight:bold">Version 4: 10/07/2021</label> <br />
+                    <p>
+                        This update:
+                        <ul>
+                            <li>Provided default values for adding a game and genre, making the site a bit cleaner and instructions straightfoward. </li>
+                            <li>Implements further CRUD capabilities by allowing the user to add a genre (in general, not just to a game).</li>
+                            <li>Implements further CRUD capabilities by allowing the user to add YouTube videos to a specific game.</li>
+                            <li>Changed the interface design of filtering genres/tags. Previously genres were confined in 
+                            uniformly-sized boxes, even if the genres had more characters; this resulted in a crammed look.</li>
+                            <li>In the SQL database, there is now another table that connects to the primary Game table: the GameVideo table.   
+                            </li>
+                            <li>The GameVideo table consists of a GameId and a VideoUrl. </li>
                         </ul>
                     </p>
 
