@@ -20,6 +20,9 @@ namespace _39StreamingLibrary.Pages
 
             string sqlgamegenre = "select GameId, GenreId from dbo.GameGenre";
             gamegenres = await _db3.LoadData<GameGenreModel, dynamic>(sqlgamegenre, new { });
+
+            string sqlgamevideo = "select GameId, VideoUrl from dbo.GameVideo";
+            gamevideos = await _db4.LoadData<GameVideoModel, dynamic>(sqlgamevideo, new { });
         }
 
         void OpenGame(GameModel currGame)
@@ -27,6 +30,7 @@ namespace _39StreamingLibrary.Pages
             // Set the selected game as the current game
             selectedGame = currGame;
             grabSpecificGenres(currGame);
+            grabSpecificVideos(currGame);
 
             // Open the Popup
             ShowPopup = true;
@@ -38,6 +42,7 @@ namespace _39StreamingLibrary.Pages
 
             // Have to clear the list, otherwise genres just keep adding up with each opened modal
             specificGenres.Clear();
+            specificVideos.Clear();
 
             // Have to reset the offsets, otherwise position of the next modal begins when the last one was closed
             offsetY = 0;
@@ -89,7 +94,11 @@ namespace _39StreamingLibrary.Pages
                 await InvokeAsync(StateHasChanged);
             }
         }
-
+        void grabSpecificVideos(GameModel currGame)
+        {
+            var set1 = gamevideos.Where(gamevideo => gamevideo.GameId == currGame.GameId); // Set 1 is
+            specificVideos = set1.ToList();
+        }
 
         /// /////////////////////////////
         /// /////////////////////////////
@@ -171,13 +180,32 @@ namespace _39StreamingLibrary.Pages
                 GameId = game.GameId
             };
 
-            string sql = "delete from game where GameId = @GameId";
+            string sql = "delete from dbo.Game where GameId = @GameId";
             await _db.SaveData(sql, g);
 
             offsetX = 0;
             offsetY = 0;
 
             await OnInitializedAsync();
+        }
+
+        private async Task InsertGenre()
+        {
+            GenreModel g = new GenreModel
+            {
+                GenreName = newGenre.GenreName
+            };
+
+            string sql = @"insert into dbo.Genre (GenreName)" +
+                    "values (@GenreName);";
+            await _db2.SaveData<GenreModel>(sql, g);
+
+            genres.Add(g);
+
+            await OnInitializedAsync();
+
+            newGenre = new DisplayGenreModel(); // Clear up the new game
+            selectedGenre = new GenreModel(); // Clear up the inserted genre, otherwise it'll automatically display when the next game is edited
         }
 
         private async Task UpdateGenre()
@@ -198,6 +226,23 @@ namespace _39StreamingLibrary.Pages
             grabSpecificGenres(selectedGame); // Repopulate to display the new 
 
             selectedGenre = new GenreModel(); // Clear up the selected genre, otherwise it'll automatically display when the next game is edited
+        }
+        private async Task UpdateGameVideo()
+        {
+            GameVideoModel gv = new GameVideoModel()
+            {
+                GameId = selectedGame.GameId,
+                VideoUrl = selectedVideo.VideoUrl
+            };
+
+            string sql = @"insert into dbo.GameVideo (GameId, VideoUrl)" +
+                            "values(@GameId, @VideoUrl)";
+            await _db4.SaveData<GameVideoModel>(sql, gv);
+            await OnInitializedAsync();
+
+            specificVideos.Clear(); // Clear up specific videos list, otherwise they pile up
+
+            selectedVideo = new GameVideoModel(); // Clear up the selected genre, otherwise it'll automatically display when the next game is edited
         }
 
     }

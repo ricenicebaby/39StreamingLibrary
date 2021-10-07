@@ -11,6 +11,6 @@ namespace _39StreamingLibrary.Models
         [Required]
         [StringLength(50, ErrorMessage = "Genre tag is too long!")]
         [MinLength(1, ErrorMessage = "Genre tag is too short!")]
-        public string GenreName { get; set; }
+        public string GenreName { get; set; } = "Genre name here";
     }
 }

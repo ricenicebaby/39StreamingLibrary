@@ -4,21 +4,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.Common;
+
+using System.Data.SqlClient;
 
 namespace DataAccessLibrary
 {
-    public class GenreData : IGenreData
+    public class GameVideoData : IGameVideoData
     {
         private readonly ISqlDataAccess db;
-
-        public GenreData(ISqlDataAccess db)
+        public GameVideoData(ISqlDataAccess db)
         {
             this.db = db;
         }
 
-        public Task<List<GenreModel>> LoadData<T, U>(string sql, U parameters)
+        public Task<List<GameVideoModel>> LoadData<T, U>(string sql, U parameters)
         {
-            return this.db.LoadData<GenreModel, dynamic>(sql, new { });
+            return this.db.LoadData<GameVideoModel, dynamic>(sql, new { });
         }
 
         public Task SaveData<T>(string sql, T parameters)

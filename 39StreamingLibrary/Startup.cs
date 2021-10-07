@@ -34,6 +34,7 @@ namespace _39StreamingLibrary
             services.AddTransient<IGameData, GameData>();
             services.AddTransient<IGenreData, GenreData>();
             services.AddTransient<IGameGenreData, GameGenreData>();
+            services.AddTransient<IGameVideoData, GameVideoData>();
 
         }
 

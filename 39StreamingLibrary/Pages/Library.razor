@@ -7,17 +7,11 @@
 @inject IGameData _db
 @inject IGenreData _db2
 @inject IGameGenreData _db3
+@inject IGameVideoData _db4
 
 <!-- Add game -->
 <div class="container-fluid" style="background-color:lemonchiffon">
     <h3 style="font-family:LemonJuice">Add new game</h3>
-    <p>
-        Instructions:
-        <ol>
-            <li>Add the game by providing the game name (first box) and the address to the game's cover art (second box).</li>
-            <li>Click on the newly added game and click the "Edit" button.</li>
-        </ol>
-    </p>
     <EditForm Model="@newGame" OnValidSubmit="@InsertGame">
         <!-- Validate data annotations in the DisplayGameModel model-->
         <DataAnnotationsValidator />
@@ -41,7 +35,7 @@
     }
     else
     {
-        <div class="btn-group">
+        <div class="container-fluid">
             @foreach (var genre in genres)
             {
                 <label class="btn btn-primary">
@@ -50,7 +44,16 @@
 
             }
         </div>
-        @*<button style="background-color:Highlight;font-weight:bold">Add genre +</button>*@
+        <EditForm Model="@newGenre" OnValidSubmit="@InsertGenre">
+            <!-- Validate data annotations in the DisplayGameModel model-->
+            <DataAnnotationsValidator />
+            <!-- Displays error messages to user if invalid submit-->
+            <ValidationSummary />
+
+            <InputText id="genreName" @bind-Value="newGenre.GenreName" />
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </EditForm>
     }
 </div>
 
@@ -99,7 +102,7 @@
 @if (ShowPopup)
 {
     <!-- This is the popup to create a game's display -->
-    <div class="modal" tabindex="-1" style="display:block;top:@(offsetY)px;left:@(offsetX)px;" role="dialog" @onclick="@ClosePopup"
+    <div class="modal" tabindex="-1" style="display:block;top:@(offsetY)px;left:@(offsetX)px" role="dialog" @onclick="@ClosePopup"
          draggable="true" @ondragend="@OnDragEnd" @ondragstart="@OnDragStart">
         <div class="modal-dialog">
 
@@ -111,9 +114,8 @@
                 </div>
 
                 <!-- Body -->
-                <div class="modal-body">
+                <div class="modal-body" style="overflow-x:auto;overflow-y:scroll">
                     <label>Game: @selectedGame.GameName</label> <br />
-                    <label>Description: </label><br />
                     <label>
                         Genre(s): @foreach (var genre in specificGenres)
                         {
@@ -121,6 +123,18 @@
                         }
 
                     </label><br />
+                    <label>
+                        Watch: <br />
+                        <div class="container videogroup">
+                            <div class="row">
+                                @foreach (var video in specificVideos)
+                                {
+                                    <iframe class="embed-responsive-item" src="@video.VideoUrl"></iframe>
+                                }
+                            </div>
+                        </div>
+                    </label><br />
+
                     <div class="modal-footer">
                     </div>
                 </div>
@@ -149,19 +163,26 @@
                 <div class="modal-body">
                     <label>Game: </label>
                     <input type="text" id="gameName" name="gameName" @bind-value="selectedGame.GameName" /><br />
-                    <label>Description: </label><br />
                     <label>Game Cover (URL): </label>
                     <input type="text" id="gameCover" name="gameCover" @bind-value="selectedGame.GameCoverUrl" /><br />
-
                     <label>
                         Genre(s): @foreach (var genre in specificGenres)
                         {
-                            <button>@genre.GenreName</button>
+                            <button>@genre.GenreName <button style="background-color:lightcoral">&minus;</button></button>
                         }
                         <input type="text" id="genreName" name="genreName" @bind-value="selectedGenre.GenreName" />
                         <button @onclick="@UpdateGenre">Add genre +</button>
 
                     </label><br />
+                    <label>
+                        Video(s): @foreach (var video in specificVideos)
+                        {
+                            <iframe class="embed-responsive-item" src="@video.VideoUrl"></iframe>
+                        }
+                        <input type="text" @bind-value="selectedVideo.VideoUrl" />
+                        <button @onclick="@UpdateGameVideo">Add YouTube video +</button>
+                    </label>
+
                     <div class="modal-footer">
                         <button class="btn btn-warning" @onclick="@UpdateGame">Save</button>
                     </div>
@@ -217,6 +238,10 @@
     private List<GameGenreModel> gamegenres;
     private DisplayGameGenreModel newGameGenre = new DisplayGameGenreModel(); // 
     public List<GameGenreModel> testggmodel = new List<GameGenreModel>(); // For testing purposes
+
+    private List<GameVideoModel> gamevideos;
+    GameVideoModel selectedVideo = new GameVideoModel();
+    List<GameVideoModel> specificVideos = new List<GameVideoModel>();
 
     // For moving the modal
     private double startX, startY, offsetX, offsetY;

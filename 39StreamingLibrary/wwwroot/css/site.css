@@ -83,6 +83,13 @@ body {
     border-radius: 55px;
 }
 
+.videogroup > .row {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+}
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
