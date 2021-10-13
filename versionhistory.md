@@ -35,8 +35,7 @@ This update:
 - Provides further CRUD capabilities by allowing the user to add a genre to a game
 - Allows the user to move the modal
 
-**Version 4: 10/07/2021
-**
+**Version 4: 10/07/2021**
 
 This update:
 - Provided default values for adding a game and genre, making the site a bit cleaner and instructions straightfoward.
