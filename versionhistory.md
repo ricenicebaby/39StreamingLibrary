@@ -12,7 +12,6 @@ This was the base/prototype. In this version, the website could do was:
       - GameGenre information connects a game and a genre
 - List the genres and games
 - Create a modal upon clicking a game, that then binds to data of the game and displays it
-   - Note that this modal is created purely in Blazor instead of utilizing Bootstrap's modal. This is due to Blazor's nature
 
 **Version 1: 09/14/2021**
 
@@ -36,7 +35,8 @@ This update:
 - Provides further CRUD capabilities by allowing the user to add a genre to a game
 - Allows the user to move the modal
 
-Version 4: 10/07/2021
+**Version 4: 10/07/2021
+**
 
 This update:
 - Provided default values for adding a game and genre, making the site a bit cleaner and instructions straightfoward.
