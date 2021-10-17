@@ -12,7 +12,8 @@ namespace DataAccessLibrary.Models
         [Key]
         public Guid GameId { get; set; }
         public string GameName { get; set; }
-        public string GameDescription { get; set; }
+        public string GameDescription { get; set; } = string.Empty;
         public string GameCoverUrl { get; set; }
+        public DateTime GameDate { get; set; }
     }
 }

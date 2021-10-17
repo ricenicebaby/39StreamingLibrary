@@ -3,11 +3,10 @@
     display: flex;
     flex-direction: column;
     background-image: url(/images/background.jpg);
-    background-repeat: no-repeat;
+    background-repeat: repeat-y;
     background-position: center center;
     background-attachment: fixed;
     background-size: cover;
-    background-color: lightgoldenrodyellow;
     background-clip: border-box;
 }
 

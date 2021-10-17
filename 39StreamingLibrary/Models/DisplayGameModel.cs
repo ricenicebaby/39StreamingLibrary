@@ -11,10 +11,10 @@ namespace _39StreamingLibrary.Models
         [Required]
         [StringLength(200, ErrorMessage = "Game name is too long")]
         [MinLength(1, ErrorMessage = "Game name is too short")]
-        public string GameName { get; set; } = "Game name here";
+        public string GameName { get; set; }
 
         [Required]
         [Url]
-        public string GameCoverUrl { get; set; } = "Game cover link here";
+        public string GameCoverUrl { get; set; }
     }
 }

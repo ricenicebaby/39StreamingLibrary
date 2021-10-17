@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataAccessLibrary.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace _39StreamingLibrary.Models
         [Required]
         [StringLength(50, ErrorMessage = "Genre tag is too long!")]
         [MinLength(1, ErrorMessage = "Genre tag is too short!")]
-        public string GenreName { get; set; } = "Genre name here";
+        public string GenreName { get; set; }
+
     }
 }

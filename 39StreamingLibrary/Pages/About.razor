@@ -1,0 +1,118 @@
+﻿@page "/about"
+
+<h1 class="text-center" style="font-family: FreshLychee;color:#4B0082">Welcome to the 39 Streaming Library!</h1>
+
+<div class="container" style="background-color:lemonchiffon">
+    <p>
+        Welcome to the 39 Streaming Library. This is a Blazor-made website made for fun to archive 39Daph's streaming content in an easy-to-navigate way! <br />
+        This is a Blazor-server web app that connects a many-to-many SQL database, both of which are hosted on Azure; naturally, then, there is no profit being made. <br />
+
+        For further information regarding the code, SQL database schema, and other, please visit <a href="https://github.com/ricenicebaby/39StreamingLibrary">my GitHub</a> here.
+
+        <center><b>I am still actively working on this website! So please look forward to further updates with time.</b></center>
+        <center>
+            For version history, click here <br />
+            <button data-toggle="modal" data-target="#versionHistory">Version history</button>
+        </center>
+    </p>
+</div>
+
+<div class="modal fade" tabindex="-1" id="versionHistory" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="modal-header">
+                <h3 class="modal-title" style="font-family:LemonJuice">Version history</h3>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <label style="font-weight:bold">Version 0: 09/06/2021</label> <br />
+                <p>
+                    This was the base/prototype. In this version, the website could do was:
+                    <ul>
+                        <li>Populate models from their corresponding table in the SQL database</li>
+                        <li>List the genres and games</li>
+                        <li>Create a modal upon clicking a game, that then binds to data of the game and displays it</li>
+                    </ul>
+                </p>
+
+                <label style="font-weight:bold">Version 1: 09/14/2021</label> <br />
+                <p>
+                    This update:
+                    <ul>
+                        <li>Makes a modal be closed by clicking outside of it, instead of only being able to click the Close button</li>
+                        <li>Allows a user to add a game to the SQL database</li>
+                    </ul>
+                </p>
+
+                <label style="font-weight:bold">Version 2: 09/22/2021</label> <br />
+                <p>
+                    This update:
+                    <ul>
+                        <li>Provides the remaining CRUD actions (update/edit and delete) to be performed. Currently anybody can do it</li>
+                        <li>The user can edit a game name or game cover.</li>
+                        <li>Implemented ability to filter games by genre</li>
+                        <li>Dropped an unnecessary ID string column from every table; this string was a string version of the uniqueidentifier ID that was used initially</li>
+                        <li>Added an additional table connected to Game, which will hold video URL's for the respective game</li>
+                    </ul>
+                </p>
+
+                <label style="font-weight:bold">Version 3: 09/30/2021</label> <br />
+                <p>
+                    This update:
+                    <ul>
+                        <li>Provides further CRUD capabilities by allowing the user to add a genre to a game.</li>
+                        <li>Allows the user to move the modal.</li>
+                    </ul>
+                </p>
+
+                <label style="font-weight:bold">Version 4: 10/07/2021</label> <br />
+                <p>
+                    This update:
+                    <ul>
+                        <li>Provided default values for adding a game and genre, making the site a bit cleaner and instructions straightfoward. </li>
+                        <li>Implements further CRUD capabilities by allowing the user to add a genre (in general, not just to a game).</li>
+                        <li>Implements further CRUD capabilities by allowing the user to add YouTube videos to a specific game.</li>
+                        <li>
+                            Changed the interface design of filtering genres/tags. Previously genres were confined in
+                            uniformly-sized boxes, even if the genres had more characters; this resulted in a crammed look.
+                        </li>
+                        <li>
+                            In the SQL database, there is now another table that connects to the primary Game table: the GameVideo table.
+                        </li>
+                        <li>The GameVideo table consists of a GameId and a VideoUrl. </li>
+                    </ul>
+                </p>
+
+                <label style="font-weight:bold">Version 5: 10/13/2021</label> <br />
+                <p>
+                    This update:
+                    <ul>
+                        <li>Overhauls the modal system and style. Users cannot move modals anymore. However, a classic, smooth modal fade is added. Design is also cleaned up and looks nicer (in my opinion).</li>
+                        <li>Overhauls the filter interface. Now there is a fixed sidebar on the side that contains all the genres and tags for users to filter there -- as opposed
+                        to the tags being located at the top of the page.</li>
+                        <li>Implements a "search-as-you-type" search function.</li>
+                        <li>Includes a "Status" dropdown bar that allows users to filter between: "Completed", "Ongoing", "Flushed", and "All" games.</li>
+                        <li>Includes a "Sort by" dropdown bar that further allows users to order the games by: "Most recent", "Oldest", "Ascendinding order", or "Descending order".</li>
+                        <li><b>Importantly (!important), finally, implemented an authorization and authentication system.</b><br />
+                            Rather than any user being able to create, edit/update, and delete entries, only authorized users can now. 
+                            Non-authorized users can still view games and filter by genre.<br />
+                            For security reasons, being able to register users has been disabled by redirecting all routes to the "Register" page to the "Login". So currently only registered
+                            users can login to perform CRUD actions.
+                        </li>
+                        <li>Videos for games are now ordered by date, rather than just randomly. </li>
+                    </ul>
+                </p>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+@code {
+
+}
