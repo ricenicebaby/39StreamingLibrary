@@ -1,4 +1,4 @@
-﻿@page "/library"
+﻿@page "/"
 
 @using DataAccessLibrary
 @using DataAccessLibrary.Models
@@ -8,252 +8,273 @@
 @inject IGenreData _db2
 @inject IGameGenreData _db3
 @inject IGameVideoData _db4
+@inject IJSRuntime jsRuntime
 
-<!-- Add game -->
-<div class="container-fluid" style="background-color:lemonchiffon">
-    <h3 style="font-family:LemonJuice">Add new game</h3>
-    <EditForm Model="@newGame" OnValidSubmit="@InsertGame">
-        <!-- Validate data annotations in the DisplayGameModel model-->
-        <DataAnnotationsValidator />
-        <!-- Displays error messages to user if invalid submit-->
-        <ValidationSummary />
 
-        <InputText id="gameName" @bind-Value="newGame.GameName" />
-        <InputText id="gameCoverUrl" @bind-Value="newGame.GameCoverUrl" />
-
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </EditForm>
-
-</div>
-
-<!-- Genre buttons/tags -->
 <div class="container-fluid">
-    <h3 style="font-family:LemonJuice">Filter:</h3>
-    @if (genres is null)
-    {
-        <p><em>Loading... </em></p>
-    }
-    else
-    {
-        <div class="container-fluid">
-            @foreach (var genre in genres)
+    <div class="navbar navbar-inverse navbar-fixed-left p-1 my-3">
+        <ul class="nav navbar-nav">
+            @if (genres is null)
             {
-                <label class="btn btn-primary">
-                    <input type="checkbox" @onchange="eventArgs => { grabSpecificGames(genre, eventArgs.Value); }" /> @genre.GenreName
-                </label>
-
+                <p><em>Loading... </em></p>
             }
-        </div>
-        <EditForm Model="@newGenre" OnValidSubmit="@InsertGenre">
-            <!-- Validate data annotations in the DisplayGameModel model-->
-            <DataAnnotationsValidator />
-            <!-- Displays error messages to user if invalid submit-->
-            <ValidationSummary />
-
-            <InputText id="genreName" @bind-Value="newGenre.GenreName" />
-
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </EditForm>
-    }
-</div>
-
-<!-- For testing purposes -->
-<div class="container" style="background-color:darkorange">
-    @if (testggmodel is null)
+            else
             {
-                <p><em>Loading</em></p>
+                <li class="form-check">
+                    <label>Filter by genre: </label>
+                    @foreach (var genre in genres)
+                    {
+                        <label class="form-check-label">
+                            <input type="checkbox" @onchange="eventArgs => { grabSpecificGames(genre, eventArgs.Value); }" /> @genre.GenreName
+                        </label><br />
+                    }
+                    <AuthorizeView>
+                        <button style="background-color:gold;font-weight:bold" data-toggle="modal" data-target="#addGenreModal">+ Add genre</button>
+                    </AuthorizeView>
+                </li>
             }
-    else
-            {
-                @foreach (var gg in testggmodel)
+        </ul>
+    </div>
+
+    <div class="container-fluid">
+        <div class="d-flex flex-column">
+            <!-- Games -->
+            <div class="container my-3">
+                <div class="row" style="background-color: lemonchiffon">
+                    <input class="col-6" @bind-value="SearchText" @bind-value:event="oninput" placeholder="Search game by title" />
+
+                    <div class="dropdown col-2">
+                        <button class="dropdown-toggle btn mx-2" style="background-color: white" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Status
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" data-value="Completed" @onclick="() => SortStatus(1)">Completed</a></li>
+                            <li><a class="dropdown-item" data-value="Ongoing" @onclick="() => SortStatus(2)">Ongoing</a></li>
+                            <li><a class="dropdown-item" data-value="Flushed" @onclick="() => SortStatus(3)">Flushed</a></li>
+                            <li><a class="dropdown-item" data-value="All" @onclick="() => SortStatus(4)">All</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown justify-content-end col-4">
+                        <button class="dropdown-toggle btn" style="background-color:white" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Sort by
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" data-value="Most recent" @onclick="() => Sort(4)">Most recent</a></li>
+                            <li><a class="dropdown-item" data-value="Oldest" @onclick="() => Sort(3)">Oldest</a></li>
+                            <span class="dropdown-divider"></span>
+                            <li><a class="dropdown-item" data-value="Ascending order" @onclick="() => Sort(1)">Ascending order</a></li>
+                            <li><a class="dropdown-item" data-value="Descending order" @onclick="() => Sort(2)">Descending order</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                @if (games is null)
                 {
-                    <p>@gg.GameGenreId</p>
-                    <p>@gg.GameId</p>
-                    <p>@gg.GenreId</p>
+                    <p><em>Loading... </em></p>
                 }
-            }
-</div>
-
-<!-- Games -->
-<div class="container py-4">
-    @if (games is null)
-    {
-        <p><em>Loading... </em></p>
-    }
-    else
-    {
-        <div class="row row-cols-lg-4 row-cols-md-3 row-cols-3">
-            @foreach (var game in games)
-            {
-                <div class="image">
-                    <img class="image__img" src="@game.GameCoverUrl" id="@game.GameId" style="width:190px;height:250px" type="button" />
-                    <div class="image__overlay" style="width:190px;height:250px">
-                            <button class="btn btn-primary" @onclick="() => OpenGame(game)">View</button>
-                            <button class="btn btn-warning" @onclick="() => OpenEditGame(game)">Edit</button>
-                            <button class="btn btn-danger" @onclick="() => OpenDeletePopup(game)">Delete</button>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-</div>
-
-<!-- Modal -->
-@if (ShowPopup)
-{
-    <!-- This is the popup to create a game's display -->
-    <div class="modal" tabindex="-1" style="display:block;top:@(offsetY)px;left:@(offsetX)px" role="dialog" @onclick="@ClosePopup"
-         draggable="true" @ondragend="@OnDragEnd" @ondragstart="@OnDragStart">
-        <div class="modal-dialog">
-
-            <!-- Modal content -->
-            <div class="modal-content" onclick="event.stopPropagation();">
-                <!-- Header -->
-                <div class="modal-header">
-                    <h3 class="modal-title" style="font-family:LemonJuice">@selectedGame.GameName</h3>
-                </div>
-
-                <!-- Body -->
-                <div class="modal-body" style="overflow-x:auto;overflow-y:scroll">
-                    <label>Game: @selectedGame.GameName</label> <br />
-                    <label>
-                        Genre(s): @foreach (var genre in specificGenres)
+                else
+                {
+                    <div class="row row-cols-lg-4 row-cols-md-3 row-cols-3">
+                        @foreach (var game in FilteredGames)
                         {
-                            <button>@genre.GenreName</button>
-                        }
-
-                    </label><br />
-                    <label>
-                        Watch: <br />
-                        <div class="container videogroup">
-                            <div class="row">
-                                @foreach (var video in specificVideos)
-                                {
-                                    <iframe class="embed-responsive-item" src="@video.VideoUrl"></iframe>
-                                }
+                            <div class="image">
+                                <img class="image__img" src="@game.GameCoverUrl" id="@game.GameId" style="width:190px;height:250px" type="button" />
+                                <div class="image__overlay" style="width:190px;height:250px">
+                                    <button class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter" @onclick="() => OpenPopup(game)">View</button>
+                                    <AuthorizeView>
+                                        <button class="btn btn-warning" data-toggle="modal" data-target="#editModal" @onclick="() => OpenEditGame(game)">Edit</button>
+                                        <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal" @onclick="() => OpenDeletePopup(game)">Delete</button>
+                                    </AuthorizeView>
+                                </div>
                             </div>
-                        </div>
-                    </label><br />
 
-                    <div class="modal-footer">
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-}
-
-<!-- Edit modal -->
-@if (ShowEditPopup)
-{
-    <!-- This is the popup to edit a game's information -->
-    <div class="modal" tabindex="-1" style="display:block;top:@(offsetY)px;left:@(offsetX)px;" role="dialog"
-         draggable="true" @ondragend="@OnDragEnd" @ondragstart="@OnDragStart">
-        <div class="modal-dialog">
-            <!-- Modal content -->
-            <div class="modal-content">
-                <!-- Header -->
-                <div class="modal-header">
-                    <h3 class="modal-title" style="font-family:LemonJuice">@selectedGame.GameName</h3>
-                    <button class="btn btn-warning" @onclick="@UpdateGame">&times;</button>
-                </div>
-
-                <!-- Body -->
-                <div class="modal-body">
-                    <label>Game: </label>
-                    <input type="text" id="gameName" name="gameName" @bind-value="selectedGame.GameName" /><br />
-                    <label>Game Cover (URL): </label>
-                    <input type="text" id="gameCover" name="gameCover" @bind-value="selectedGame.GameCoverUrl" /><br />
-                    <label>
-                        Genre(s): @foreach (var genre in specificGenres)
-                        {
-                            <button>@genre.GenreName <button style="background-color:lightcoral">&minus;</button></button>
                         }
-                        <input type="text" id="genreName" name="genreName" @bind-value="selectedGenre.GenreName" />
-                        <button @onclick="@UpdateGenre">Add genre +</button>
+                        <AuthorizeView>
+                            <button class="image" style="background-color:lemonchiffon;width: 190px;height:250px" data-toggle="modal" data-target="#addGameModal">
+                                <p class="text-center" style="font-family: LemonJuice; font-size: 7em">+</p>
+                                <p class="text-center" style="font-family:LemonJuice;font-size:2em">Add game</p>
+                            </button>
+                        </AuthorizeView>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
 
-                    </label><br />
-                    <label>
-                        Video(s): @foreach (var video in specificVideos)
+<!-- Standard display modal-->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="background-color:lemonchiffon">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">@selectedGame.GameName</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="@ClosePopup">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="overflow-x:auto">
+                <label>
+                    Genre(s): @foreach (var genre in specificGenres)
+                    {
+                        <button id="@genre.GenreName">@genre.GenreName</button>
+                    }
+
+                </label><br />
+                <label>
+                    Watch: <br />
+                    <div class="container videogroup">
+                        <div class="d-flex flex-row">
+                            @foreach (var video in specificVideos)
+                            {
+                                <span class="flex-column">
+                                    <iframe class="embed-responsive-item" style="position:relative;z-index:0" src="@video.VideoUrl"></iframe>
+                                    <p>Streamed @video.VideoDate.ToShortDateString();</p>
+                                </span>
+                            }
+                        </div><br />
+                    </div>
+                </label><br />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="@ClosePopup">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit modal-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">@selectedGame.GameName</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label>Game: </label>
+                <input type="text" id="gameName" name="gameName" @bind-value="selectedGame.GameName" /><br />
+                <label>Game Cover (URL): </label>
+                <input type="text" id="gameCover" name="gameCover" @bind-value="selectedGame.GameCoverUrl" /><br />
+                <label>
+                    Genre(s): @foreach (var genre in specificGenres)
+                    {
+                        <button>@genre.GenreName</button><button style="background-color:lightcoral" @onclick="() => DeleteGameGenre(genre)">&minus;</button>
+                    } <br />
+                    <input type="text" id="genreName" name="genreName" placeholder="Add existing genre" @bind-value="selectedGenre.GenreName" />
+                    <button @onclick="@UpdateGenre">Add</button>
+
+                </label><br /><br />
+                <label>
+                    <div class="d-flex flex-column">
+                        @foreach (var video in specificVideos)
                         {
-                            <iframe class="embed-responsive-item" src="@video.VideoUrl"></iframe>
+                            <span class="flex-column">
+                                <label>Embed YouTube link </label><input class="mx-1" type="text" placeholder="@video.VideoUrl" @bind-value="video.VideoUrl" /><br />
+                                <label>Date streamed </label><input class="mx-1" type="text" id="genreName" name="genreName" @bind-value="video.VideoDate" /><button class="ml-1" @onclick="() => UpdateGameVideo(video)">Save</button><br /><br />
+                            </span>
                         }
-                        <input type="text" @bind-value="selectedVideo.VideoUrl" />
-                        <button @onclick="@UpdateGameVideo">Add YouTube video +</button>
-                    </label>
-
-                    <div class="modal-footer">
-                        <button class="btn btn-warning" @onclick="@UpdateGame">Save</button>
                     </div>
-                </div>
+                    <input type="text" placeholder="Add YouTube embed link" @bind-value="selectedVideo.VideoUrl" />
+                    <button @onclick="@CreateGameVideo">Add</button>
+                </label><br /><br />
+
+                <label>Last played: </label><br />
+                <input type="text" id="gameDate" name="gameDate" @bind-value="selectedGame.GameDate" /><br />
             </div>
-
-        </div>
-    </div>
-}
-
-@if (ShowDeletePopup)
-{
-    <div class="modal" style="display:block" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-body container-fluid d-flex flex-column flex-grow-1">
-                    <div class="row">
-                        <header class="col-12">
-                            <h4>Are you sure you want to delete <b>@selectedGame.GameName</b>?</h4>
-                        </header>
-                        <aside class="col-4">
-                            <img class="rounded float-left" style="width:190px;height:250px" src="@selectedGame.GameCoverUrl" />
-                        </aside>
-                        <div class="col-8" style="padding-left:60px">
-                            <button class="btn btn-danger" @onclick="() => DeleteGame(selectedGame)">Yes, delete forever :)</button><br />
-                            <button class="btn btn-warning" @onclick="CloseDeletePopup">Never mind</button>
-                        </div>
-                    </div>
-
-                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="@ClosePopup">Close</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" @onclick="@UpdateGame">Save changes</button>
             </div>
         </div>
     </div>
-}
+</div>
+
+<!-- Delete modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body container-fluid d-flex flex-column flex-grow-1">
+                <div class="row">
+                    <header class="col-12">
+                        <h4>Are you sure you want to delete <b>@selectedGame.GameName</b>?</h4>
+                    </header>
+                    <aside class="col-4">
+                        <img class="rounded float-left" style="width:190px;height:250px" src="@selectedGame.GameCoverUrl" />
+                    </aside>
+                    <div class="col-8" style="padding-left:60px">
+                        <button class="btn btn-danger" data-dismiss="modal" @onclick="() => DeleteGame(selectedGame)">Yes, delete forever</button><br />
+                        <button class="btn btn-warning" data-dismiss="modal">Never mind</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add game modal -->
+<div class="modal fade" id="addGameModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="background-color: lemonchiffon">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Add new game</h5>
+            </div>
+            <div class="modal-body container-fluid d-flex flex-column flex-grow-1">
+                <div class="row">
+                    <div class="container-fluid">
+                        <EditForm Model="@newGame" OnSubmit="@CreateGame">
+                            <!-- Validate data annotations in the DisplayGameModel model -->
+                            <DataAnnotationsValidator />
+                            <!-- Displays error messages to user if invalid submit -->
+                            <ValidationSummary />
+
+                            <InputText id="gameName" placeholder="Game name" @bind-Value="newGame.GameName" />
+                            <InputText id="gameCoverUrl" placeholder="Game cover link" @bind-Value="newGame.GameCoverUrl" />
+                            <button type="submit" class="btn btn-primary" data-dismiss="modal" @onclick="CreateGame">Submit</button>
+                        </EditForm>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add genre modal -->
+<div class="modal fade" id="addGenreModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="background-color: lemonchiffon">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Add new genre</h5>
+            </div>
+            <div class="modal-body container-fluid d-flex flex-column flex-grow-1">
+                <div class="row">
+                    <div class="container-fluid">
+                        <EditForm Model="@newGenre" OnSubmit="@CreateGenre">
+                            <!-- Validate data annotations in the DisplayGameModel model -->
+                            <DataAnnotationsValidator />
+                            <!-- Displays error messages to user if invalid submit -->
+                            <ValidationSummary />
+
+                            <InputText id="genreName" placeholder="Genre name" @bind-Value="newGenre.GenreName" />
+
+                            <button type="submit" class="btn btn-primary" data-dismiss="modal" @onclick="CreateGenre">Submit</button>
+                        </EditForm>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @code {
-    // Booleans for opening or closing modals
-    public bool ShowPopup { get; set; } = false;
-    public bool ShowEditPopup { get; set; } = false;
-    public bool ShowDeletePopup { get; set; } = false;
-
-    // Initializations
-    private List<GameModel> games; // Holds currently populated list of games
-    private DisplayGameModel newGame = new DisplayGameModel(); // For new games
-    GameModel selectedGame = new GameModel();
-    List<GameModel> specificGames = new List<GameModel>();
-
-    private List<GenreModel> genres; // Holds currently populated list of genres
-    private DisplayGenreModel newGenre = new DisplayGenreModel(); // For new genres
-    GenreModel selectedGenre = new GenreModel();
-    List<GenreModel> specificGenres = new List<GenreModel>();
-
-    private List<GameGenreModel> gamegenres;
-    private DisplayGameGenreModel newGameGenre = new DisplayGameGenreModel(); // 
-    public List<GameGenreModel> testggmodel = new List<GameGenreModel>(); // For testing purposes
-
-    private List<GameVideoModel> gamevideos;
-    GameVideoModel selectedVideo = new GameVideoModel();
-    List<GameVideoModel> specificVideos = new List<GameVideoModel>();
-
-    // For moving the modal
-    private double startX, startY, offsetX, offsetY;
-    private void OnDragStart(DragEventArgs args)
-    {
-        startX = args.ClientX;
-        startY = args.ClientY;
-    }
-    private void OnDragEnd(DragEventArgs args)
-    {
-        offsetX += args.ClientX - startX;
-        offsetY += args.ClientY - startY;
-    }
+    public string SearchText = "";
 
 }
